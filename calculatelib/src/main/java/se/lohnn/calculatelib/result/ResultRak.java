@@ -45,37 +45,6 @@ public class ResultRak extends Result {
         return ((nyttEftersparkrav() / (loanSettings.getLastMonth())) / ((loanSettings.getLastMonth()) + 1)) * 2;
     }
 
-    @Override
-    public CalculationInterface eftersparande() {
-        //Utifall låneinställningar är inställda på att jämka, så multiplicerar vi värdet med 0.7
-        CalculationInterface lånekostnad = i -> lånekostnad().calculate(i) * skatteavdragVärde();
-
-        CalculationInterface calculationInterface = i -> ((genomsnittligtEftersparande() / 2)
-                + (lånekostnad.calculate(loanSettings.getFirstMonth()) - lånekostnad.calculate(i)) +
-                ((2 * (nyttEftersparkrav() - ackumuleradeEftersparPoäng())) / ((loanSettings.getLastMonth() + 1) * loanSettings.getLastMonth())));
-
-        //Använd G
-        if (calculationInterface.calculate(loanSettings.getFirstMonth()) < 0) {
-            double genomsnittligtEftersparande = (nyttEftersparkrav() > 0) ? 0 : genomsnittligtEftersparande();
-            calculationInterface = i -> i * (genomsnittligtEftersparande / 2)
-                    + (lånekostnad.calculate(loanSettings.getFirstMonth()) - lånekostnad.calculate(loanSettings.getLastMonth()));
-        }
-//        else { //Använd I
-//            double oldAckumuleradePoang = ackumuleradeEftersparPoäng();
-//            double sumPostSavings = 0, ackumuleradePoang = 0;
-//            for (int i = 0; i < loanSettings.getLastMonth(); i += 1) {
-//                double tempAmount = loanSettings.getLånebelopp() - amortering() * i;
-//                double tempLånekostnad = (skatteavdragVärde() * bankSettings.getLånekostnad() * tempAmount);
-//                double tempPostSavings = (genomsnittligtEftersparande() / 2) + (jämkadLånekostnad.getFirst() - tempLånekostnad) +
-//                        ((2 * (nyttEftersparkrav() - oldAckumuleradePoang)) / ((loanSettings.getLastMonth() + 1) * loanSettings.getLastMonth()));
-//                sumPostSavings += tempPostSavings;
-//                ackumuleradePoang += sumPostSavings;
-//            }
-//        }
-
-        return calculationInterface;
-    }
-
     protected double skatteavdragVärde() {
         return loanSettings.isSkattejämkning() ? 0.7 : 1;
     }
@@ -125,18 +94,37 @@ public class ResultRak extends Result {
     }
 
     @Override
-    public double ackumuleradeEftersparPoäng() {
-        //G
-        int antalMånader = (int) (loanSettings.getLastMonth());
+    public CalculationInterface eftersparande() {
         CalculationInterface eftersparande = i -> {
             double tempLånekostnad = (skatteavdragVärde() * bankSettings.getLånekostnad() * kvarILån().calculate(i - 1));
             return (genomsnittligtEftersparande() / 2) + (lånekostnad().calculate(loanSettings.getFirstMonth()) * skatteavdragVärde() - tempLånekostnad);
         };
-        ArrayList<Double> postSavingsSums = beräknaAckumulation(eftersparande, antalMånader);
+        ArrayList<Double> postSavingsSums = beräknaAckumulation(eftersparande, (int) loanSettings.getLastMonth());
         ArrayList<Double> ackumuleradePoäng = beräknaAckumulation(postSavingsSums);
 
-        //TODO: Kalkyl för I
 
+        //Utifall låneinställningar är inställda på att jämka, så multiplicerar vi värdet med 0.7
+        CalculationInterface lånekostnad = i -> lånekostnad().calculate(i) * skatteavdragVärde();
+
+
+        CalculationInterface calculationInterface = i -> ((genomsnittligtEftersparande() / 2)
+                + (lånekostnad.calculate(loanSettings.getFirstMonth()) - lånekostnad.calculate(i)) +
+                ((2 * (nyttEftersparkrav() - ackumuleradePoäng.get(ackumuleradePoäng.size() - 1))) / ((loanSettings.getLastMonth() + 1) * loanSettings.getLastMonth())));
+
+        //Använd I
+        if (calculationInterface.calculate(loanSettings.getFirstMonth()) < 0) {
+            calculationInterface = i -> (genomsnittligtEftersparande() / 2) +
+                    (lånekostnad.calculate(loanSettings.getFirstMonth()) - lånekostnad.calculate(i));
+        }
+
+        return calculationInterface;
+    }
+
+    @Override
+    public double ackumuleradeEftersparPoäng() {
+        //G
+        ArrayList<Double> postSavingsSums = beräknaAckumulation(eftersparande(), (int) loanSettings.getLastMonth());
+        ArrayList<Double> ackumuleradePoäng = beräknaAckumulation(postSavingsSums);
         return ackumuleradePoäng.get(ackumuleradePoäng.size() - 1);
     }
 
@@ -152,7 +140,7 @@ public class ResultRak extends Result {
     protected ArrayList<Double> beräknaAckumulation(ArrayList<Double> calc) {
         ArrayList<Double> toReturn = new ArrayList<>();
         double ackVal = 0;
-        for(double d : calc){
+        for (double d : calc) {
             toReturn.add(ackVal += d);
         }
         return toReturn;

@@ -24,7 +24,7 @@ import static org.junit.Assert.assertEquals;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class ResultRakTest {
+public class ResultRakTestWithG {
     private ResultRak resultRak;
     private LoanSettings loanSettings;
 
@@ -32,14 +32,14 @@ public class ResultRakTest {
     public void setUp() throws Exception {
         Banksettings banksettings = Banksettings.standard_med_säkerhet;
         //TODO: Skattejämkning av
-        loanSettings = new LoanSettings(5000000, 1000000, 20, true, true, true);
+        loanSettings = new LoanSettings(50000000, 1000000, 20, true, true, true);
         resultRak = new ResultRak(banksettings, loanSettings);
     }
 
     @Test
     public void testMånadsbetalning() throws Exception {
-        assertEquals(7753, resultRak.månadsbetalning().calculate(loanSettings.getFirstMonth()), 0.5);
-        assertEquals(7753, resultRak.månadsbetalning().calculate(loanSettings.getLastMonth()), 0.5);
+        assertEquals(5918, resultRak.månadsbetalning().calculate(loanSettings.getFirstMonth()), 0.5);
+        assertEquals(5918, resultRak.månadsbetalning().calculate(loanSettings.getLastMonth()), 0.5);
     }
 
     @Test
@@ -49,8 +49,8 @@ public class ResultRakTest {
 
     @Test
     public void testEftersparande() throws Exception {
-        assertEquals(1836, resultRak.eftersparande().calculate(loanSettings.getFirstMonth()), 0.5);
-        assertEquals(3579, resultRak.eftersparande().calculate(loanSettings.getLastMonth()), 0.5);
+        assertEquals(1, resultRak.eftersparande().calculate(loanSettings.getFirstMonth()), 0.5);
+        assertEquals(1744, resultRak.eftersparande().calculate(loanSettings.getLastMonth()), 0.5);
     }
 
     @Test
@@ -67,22 +67,22 @@ public class ResultRakTest {
 
     @Test
     public void testSparbeloppKvar() throws Exception {
-        assertEquals(649766, resultRak.sparbeloppKvar(), 0.5);
+        assertEquals(209413, resultRak.sparbeloppKvar(), 0.5);
     }
 
     @Test
     public void testSparpoängKvar() throws Exception {
-        assertEquals(0, resultRak.sparpoängKvar(), 0.5);
+        assertEquals(10804133, resultRak.sparpoängKvar(), 0.5);
     }
 
     @Test
     public void testFörsparpoängOmräknad() throws Exception {
-        assertEquals(7758621, resultRak.försparpoängOmräknad(), 0.5);
+        assertEquals(77586207, resultRak.försparpoängOmräknad(), 0.5);
     }
 
     @Test
     public void testAckumuleradeEftersparPoäng() throws Exception {
-        assertEquals(69896935, resultRak.ackumuleradeEftersparPoäng(), 0.5);
+        assertEquals(16834383, resultRak.ackumuleradeEftersparPoäng(), 0.5);
     }
 
     @Test
