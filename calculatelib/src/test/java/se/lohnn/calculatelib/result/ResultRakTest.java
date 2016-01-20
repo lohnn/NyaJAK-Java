@@ -11,13 +11,13 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Copyright (C) lohnn on 2016.
- * <p/>
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p/>
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,8 +30,7 @@ public class ResultRakTest {
 
     @Before
     public void setUp() throws Exception {
-        Banksettings banksettings = Banksettings.standard_med_säkerhet;
-        //TODO: Skattejämkning av
+        Banksettings banksettings = Banksettings.getStandardMedSäkerhet();
         loanSettings = new LoanSettings(5000000, 1000000, 20, true, true, true);
         resultRak = new ResultRak(banksettings, loanSettings);
     }
@@ -40,6 +39,10 @@ public class ResultRakTest {
     public void testMånadsbetalning() throws Exception {
         assertEquals(7753, resultRak.månadsbetalning().calculate(loanSettings.getFirstMonth()), 0.5);
         assertEquals(7753, resultRak.månadsbetalning().calculate(loanSettings.getLastMonth()), 0.5);
+
+        loanSettings.setSkattejämkning(false);
+        assertEquals(8254, resultRak.månadsbetalning().calculate(loanSettings.getFirstMonth()), 0.5);
+        assertEquals(8254, resultRak.månadsbetalning().calculate(loanSettings.getLastMonth()), 0.5);
     }
 
     @Test
@@ -51,6 +54,11 @@ public class ResultRakTest {
     public void testEftersparande() throws Exception {
         assertEquals(1836, resultRak.eftersparande().calculate(loanSettings.getFirstMonth()), 0.5);
         assertEquals(3579, resultRak.eftersparande().calculate(loanSettings.getLastMonth()), 0.5);
+
+        loanSettings.setSkattejämkning(false);
+        assertEquals(1587, resultRak.eftersparande().calculate(loanSettings.getFirstMonth()), 0.5);
+        assertEquals(4077, resultRak.eftersparande().calculate(loanSettings.getLastMonth()), 0.5);
+
     }
 
     @Test
@@ -68,6 +76,9 @@ public class ResultRakTest {
     @Test
     public void testSparbeloppKvar() throws Exception {
         assertEquals(649766, resultRak.sparbeloppKvar(), 0.5);
+
+        loanSettings.setSkattejämkning(false);
+        assertEquals(679641, resultRak.sparbeloppKvar(), 0.5);
     }
 
     @Test
@@ -107,7 +118,9 @@ public class ResultRakTest {
 
     @Test
     public void testÅrligSkatteåterbäring() throws Exception {
-
+        loanSettings.setSkattejämkning(false);
+        assertEquals(-8061, resultRak.årligSkatteåterbäring().getFirst(), 0.5);
+        assertEquals(-223, resultRak.årligSkatteåterbäring().getLast(), 0.5);
     }
 
     @Test

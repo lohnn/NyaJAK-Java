@@ -50,4 +50,9 @@ public class FirstLast {
     public void setLast(double last) {
         this.last = last;
     }
+
+    @Override
+    public String toString(){
+        return String.format("%s : %s", getFirst(), getLast());
+    }
 }

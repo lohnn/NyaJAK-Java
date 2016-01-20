@@ -30,16 +30,19 @@ public class ResultRakTestWithG {
 
     @Before
     public void setUp() throws Exception {
-        Banksettings banksettings = Banksettings.standard_med_säkerhet;
-        //TODO: Skattejämkning av
+        Banksettings banksettings = Banksettings.getStandardMedSäkerhet();
         loanSettings = new LoanSettings(50000000, 1000000, 20, true, true, true);
         resultRak = new ResultRak(banksettings, loanSettings);
     }
 
     @Test
     public void testMånadsbetalning() throws Exception {
-        assertEquals(5918, resultRak.månadsbetalning().calculate(loanSettings.getFirstMonth()), 0.5);
-        assertEquals(5918, resultRak.månadsbetalning().calculate(loanSettings.getLastMonth()), 0.5);
+        assertEquals(5917, resultRak.månadsbetalning().calculate(loanSettings.getFirstMonth()), 0.5);
+        assertEquals(5917, resultRak.månadsbetalning().calculate(loanSettings.getLastMonth()), 0.5);
+
+        loanSettings.setSkattejämkning(false);
+        assertEquals(6667, resultRak.månadsbetalning().calculate(loanSettings.getFirstMonth()), 0.5);
+        assertEquals(6667, resultRak.månadsbetalning().calculate(loanSettings.getLastMonth()), 0.5);
     }
 
     @Test
@@ -49,8 +52,12 @@ public class ResultRakTestWithG {
 
     @Test
     public void testEftersparande() throws Exception {
-        assertEquals(1, resultRak.eftersparande().calculate(loanSettings.getFirstMonth()), 0.5);
-        assertEquals(1744, resultRak.eftersparande().calculate(loanSettings.getLastMonth()), 0.5);
+        assertEquals(0, resultRak.eftersparande().calculate(loanSettings.getFirstMonth()), 0.5);
+        assertEquals(1743, resultRak.eftersparande().calculate(loanSettings.getLastMonth()), 0.5);
+
+        loanSettings.setSkattejämkning(false);
+        assertEquals(0, resultRak.eftersparande().calculate(loanSettings.getFirstMonth()), 0.5);
+        assertEquals(2490, resultRak.eftersparande().calculate(loanSettings.getLastMonth()), 0.5);
     }
 
     @Test
@@ -67,12 +74,18 @@ public class ResultRakTestWithG {
 
     @Test
     public void testSparbeloppKvar() throws Exception {
-        assertEquals(209413, resultRak.sparbeloppKvar(), 0.5);
+        assertEquals(209125, resultRak.sparbeloppKvar(), 0.5);
+
+        loanSettings.setSkattejämkning(false);
+        assertEquals(298750, resultRak.sparbeloppKvar(), 0.5);
     }
 
     @Test
     public void testSparpoängKvar() throws Exception {
-        assertEquals(10804133, resultRak.sparpoängKvar(), 0.5);
+        assertEquals(10781787, resultRak.sparpoängKvar(), 0.5);
+
+        loanSettings.setSkattejämkning(false);
+        assertEquals(15421707, resultRak.sparpoängKvar(), 0.5);
     }
 
     @Test
@@ -82,7 +95,10 @@ public class ResultRakTestWithG {
 
     @Test
     public void testAckumuleradeEftersparPoäng() throws Exception {
-        assertEquals(16834383, resultRak.ackumuleradeEftersparPoäng(), 0.5);
+        assertEquals(16799708, resultRak.ackumuleradeEftersparPoäng(), 0.5);
+
+        loanSettings.setSkattejämkning(false);
+        assertEquals(23999583, resultRak.ackumuleradeEftersparPoäng(), 0.5);
     }
 
     @Test
@@ -107,7 +123,9 @@ public class ResultRakTestWithG {
 
     @Test
     public void testÅrligSkatteåterbäring() throws Exception {
-
+        loanSettings.setSkattejämkning(false);
+        assertEquals(-8061, resultRak.årligSkatteåterbäring().getFirst(), 0.5);
+        assertEquals(-223, resultRak.årligSkatteåterbäring().getLast(), 0.5);
     }
 
     @Test

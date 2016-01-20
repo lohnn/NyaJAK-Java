@@ -4,13 +4,13 @@ import se.lohnn.calculatelib.model.FirstLast;
 
 /**
  * Copyright (C) lohnn on 2015.
- * <p/>
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p/>
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,21 +25,38 @@ public class Banksettings {
     private double aktuell_ukvot;
     private double optimal_ukvot;
     private double turbo;
+    private double skatteavdrag = 0.3;
 
-    public static Banksettings standard_med_säkerhet = new Banksettings(
+    private static Banksettings STANDARD_MED_SÄKERHET = new Banksettings(
             new FirstLast(20000, 6000000),
-            new FirstLast(2, 50),
+            new FirstLast(2, 40),
             3,
             6,
             0.58,
             0.9);
-    public static Banksettings standard_utan_säkerhet = new Banksettings(new FirstLast(20000, 200000),
+    private static Banksettings STANDARD_UTAN_SÄKERHET = new Banksettings(new FirstLast(20000, 200000),
             new FirstLast(2, 10),
             4.5,
             6,
             0.58,
             0.9);
 
+    public static Banksettings getStandardMedSäkerhet() {
+        return STANDARD_MED_SÄKERHET.copy();
+    }
+
+    public static Banksettings getStandardUtanSäkerhet() {
+        return STANDARD_UTAN_SÄKERHET.copy();
+    }
+
+    /**
+     * @param laneblopp      Lägsta och högsta lånebelopp tillåtet för detta lån
+     * @param amorteringstid Kortaste och längsta återbetalningstid tillåtet för detta lån
+     * @param lanekostnad
+     * @param laneinsats
+     * @param aktuell_ukvot  Utlåningskvoten banken har just nu
+     * @param optimal_ukvot  Den optimala utlåningskvoten
+     */
     public Banksettings(FirstLast laneblopp, FirstLast amorteringstid, double lanekostnad, double laneinsats, double aktuell_ukvot, double optimal_ukvot) {
         this.låneblopp = laneblopp;
         this.amorteringstid = amorteringstid;
@@ -55,9 +72,9 @@ public class Banksettings {
      * @return
      */
     public double bestAmorteringstid() {
-        double bestAmortering = ((amorteringstid.getLast() - amorteringstid.getFirst()) /
-                optimal_ukvot) * getTurboEffekt() * aktuell_ukvot + amorteringstid.getFirst();
-        return (amorteringstid.getLast() < bestAmortering) ? amorteringstid.getLast() : bestAmortering;
+        double bestAmortering = ((getAmorteringstid().getLast() - getAmorteringstid().getFirst()) /
+                getOptimal_ukvot()) * getTurboEffekt() * getAktuell_ukvot() + getAmorteringstid().getFirst();
+        return (getAmorteringstid().getLast() < bestAmortering) ? getAmorteringstid().getLast() : bestAmortering;
     }
 
     public FirstLast getLåneblopp() {
@@ -117,11 +134,23 @@ public class Banksettings {
         return turbo;
     }
 
-    public double getTurboEffekt(){
+    public double getTurboEffekt() {
         return Math.pow(getAktuell_ukvot() / getOptimal_ukvot(), this.getTurbo());
     }
 
     public void setTurbo(double turbo) {
         this.turbo = turbo;
+    }
+
+    public double getskatteavdrag() {
+        return skatteavdrag;
+    }
+
+    public void setSkatteavdrag(double skatteavdrag) {
+        this.skatteavdrag = skatteavdrag;
+    }
+
+    public Banksettings copy() {
+        return new Banksettings(låneblopp, amorteringstid, lånekostnad, låneinsats, aktuell_ukvot, optimal_ukvot);
     }
 }

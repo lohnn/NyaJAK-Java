@@ -23,6 +23,10 @@ import se.lohnn.calculatelib.settings.LoanSettings;
  * limitations under the License.
  */
 public class ResultRak extends Result {
+    /**
+     * @param banksettings Bankens inställningar för detta lån
+     * @param loanSettings Lånets inställningar/värden för detta lån
+     */
     public ResultRak(Banksettings banksettings, LoanSettings loanSettings) {
         super(banksettings, loanSettings);
     }
@@ -46,7 +50,7 @@ public class ResultRak extends Result {
     }
 
     protected double skatteavdragVärde() {
-        return loanSettings.isSkattejämkning() ? 0.7 : 1;
+        return loanSettings.isSkattejämkning() ? 1 - bankSettings.getskatteavdrag() : 1;
     }
 
     @Override
@@ -56,7 +60,7 @@ public class ResultRak extends Result {
 
     @Override
     public CalculationInterface skatteavdrag() {
-        return i -> -0.3 * lånekostnad().calculate(i);
+        return i -> -bankSettings.getskatteavdrag() * lånekostnad().calculate(i);
     }
 
     @Override
@@ -67,14 +71,14 @@ public class ResultRak extends Result {
 
     @Override
     public double sparpoängKvar() {
-        double sparpoängKvar = 0;
         try { //Make sure we catch divide by zero exception
-            sparpoängKvar = Math.max(
+            return Math.max(
                     0,
-                    (försparpoängOmräknad() - (poängförbrukning() * (eftersparprocent() / 100)) + ackumuleradeEftersparPoäng()) * (loanSettings.getFörsparpoäng() / försparpoängOmräknad()));
+                    (försparpoängOmräknad() - (poängförbrukning() * (eftersparprocent() / 100)) +
+                            ackumuleradeEftersparPoäng()) * (loanSettings.getFörsparpoäng() / försparpoängOmräknad()));
         } catch (ArithmeticException ignored) {
+            return 0;
         }
-        return sparpoängKvar;
     }
 
     protected double eftersparprocent() {
@@ -106,14 +110,15 @@ public class ResultRak extends Result {
         //Utifall låneinställningar är inställda på att jämka, så multiplicerar vi värdet med 0.7
         CalculationInterface lånekostnad = i -> lånekostnad().calculate(i) * skatteavdragVärde();
 
-
         CalculationInterface calculationInterface = i -> ((genomsnittligtEftersparande() / 2)
                 + (lånekostnad.calculate(loanSettings.getFirstMonth()) - lånekostnad.calculate(i)) +
                 ((2 * (nyttEftersparkrav() - ackumuleradePoäng.get(ackumuleradePoäng.size() - 1))) / ((loanSettings.getLastMonth() + 1) * loanSettings.getLastMonth())));
 
-        //Använd I
+        //Använd G
         if (calculationInterface.calculate(loanSettings.getFirstMonth()) < 0) {
-            calculationInterface = i -> (genomsnittligtEftersparande() / 2) +
+            //TODO: Är den här nödvändig?
+            double tempGenomsnittligtEftersparande = nyttEftersparkrav() > 0 ? 0 : genomsnittligtEftersparande();
+            calculationInterface = i -> (tempGenomsnittligtEftersparande / 2) +
                     (lånekostnad.calculate(loanSettings.getFirstMonth()) - lånekostnad.calculate(i));
         }
 
@@ -164,7 +169,7 @@ public class ResultRak extends Result {
 
     @Override
     public double skatteavdragTotal() {
-        return lånekostnadTotal() * -0.3;
+        return lånekostnadTotal() * -bankSettings.getskatteavdrag();
     }
 
     @Override
@@ -179,10 +184,16 @@ public class ResultRak extends Result {
         return 0;
     }
 
+    /**
+     * Hjälpmetod för att räkna ihop summan för en viss tidsperiod
+     *
+     * @param firstMonth
+     * @param lastMonth
+     * @return
+     */
     protected double getSumFromTime(double firstMonth, double lastMonth) {
-        double skatteavdrag = 0.3;
-        double tempAmount1 = kvarILån().calculate(firstMonth) * skatteavdrag;
-        double tempAmount2 = kvarILån().calculate(lastMonth) * skatteavdrag;
+        double tempAmount1 = bankSettings.getLånekostnad() * kvarILån().calculate(firstMonth) * bankSettings.getskatteavdrag();
+        double tempAmount2 = bankSettings.getLånekostnad() * kvarILån().calculate(lastMonth) * bankSettings.getskatteavdrag();
         return (tempAmount1 + tempAmount2) * ((firstMonth - lastMonth) / 2);
     }
 }

@@ -25,16 +25,34 @@ public class BanksettingsMedSäkerhetTest {
 
     @Before
     public void setUp() throws Exception {
-        banksettings = Banksettings.standard_med_säkerhet;
+        banksettings = Banksettings.getStandardMedSäkerhet();
     }
 
     @Test
     public void testBestAmorteringstid() throws Exception {
-        assertEquals(32.9, banksettings.bestAmorteringstid(), 0.1);
+        assertEquals(26.5, banksettings.bestAmorteringstid(), 0.1);
     }
 
     @Test
     public void testGetTurboEffekt() throws Exception {
-        assertEquals(1, banksettings.getTurboEffekt(), 0.1);
+        assertEquals(1, banksettings.getTurboEffekt(), 0.01);
+
+        banksettings.setTurbo(1);
+        assertEquals(0.64, banksettings.getTurboEffekt(), 0.01);
+
+        banksettings.setTurbo(2);
+        assertEquals(0.42, banksettings.getTurboEffekt(), 0.01);
+
+        banksettings.setTurbo(3);
+        assertEquals(0.27, banksettings.getTurboEffekt(), 0.01);
+
+        banksettings.setTurbo(4);
+        assertEquals(0.17, banksettings.getTurboEffekt(), 0.01);
+
+        banksettings.setTurbo(5);
+        assertEquals(0.11, banksettings.getTurboEffekt(), 0.01);
+
+        banksettings.setTurbo(10);
+        assertEquals(0.01, banksettings.getTurboEffekt(), 0.005);
     }
 }

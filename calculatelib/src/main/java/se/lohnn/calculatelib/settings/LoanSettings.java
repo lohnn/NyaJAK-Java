@@ -23,6 +23,15 @@ public class LoanSettings {
     private boolean skattejämkning;
     private boolean rakBetalning;
 
+    /**
+     *
+     * @param försparpoäng Låntagarens totala försparade poäng vid lånetillfället
+     * @param lånebelopp Beloppen låntagaren vill låna
+     * @param amorteringstid Hur lång tid att betala tillbaka lånet på
+     * @param säkerhet Om det är ett lån med säkerhet
+     * @param skattejämkning Om lånet ska skattejämkas
+     * @param rakBetalning Om lånet ska använda rak månadsbetalning
+     */
     public LoanSettings(float försparpoäng, float lånebelopp, float amorteringstid, boolean säkerhet, boolean skattejämkning, boolean rakBetalning) {
         this.försparpoäng = försparpoäng;
         this.lånebelopp = lånebelopp;
