@@ -99,30 +99,29 @@ public class ResultRak extends Result {
 
     @Override
     public CalculationInterface eftersparande() {
-        CalculationInterface eftersparande = i -> {
+        CalculationInterface tempEftersparande = i -> {
             double tempLånekostnad = (skatteavdragVärde() * bankSettings.getLånekostnad() * kvarILån().calculate(i - 1));
             return (genomsnittligtEftersparande() / 2) + (lånekostnad().calculate(loanSettings.getFirstMonth()) * skatteavdragVärde() - tempLånekostnad);
         };
-        ArrayList<Double> postSavingsSums = beräknaAckumulation(eftersparande, (int) loanSettings.getLastMonth());
+        ArrayList<Double> postSavingsSums = beräknaAckumulation(tempEftersparande, (int) loanSettings.getLastMonth());
         ArrayList<Double> ackumuleradePoäng = beräknaAckumulation(postSavingsSums);
-
 
         //Utifall låneinställningar är inställda på att jämka, så multiplicerar vi värdet med 0.7
         CalculationInterface lånekostnad = i -> lånekostnad().calculate(i) * skatteavdragVärde();
 
-        CalculationInterface calculationInterface = i -> ((genomsnittligtEftersparande() / 2)
+        CalculationInterface eftersparande = i -> ((genomsnittligtEftersparande() / 2)
                 + (lånekostnad.calculate(loanSettings.getFirstMonth()) - lånekostnad.calculate(i)) +
                 ((2 * (nyttEftersparkrav() - ackumuleradePoäng.get(ackumuleradePoäng.size() - 1))) / ((loanSettings.getLastMonth() + 1) * loanSettings.getLastMonth())));
 
         //Använd G
-        if (calculationInterface.calculate(loanSettings.getFirstMonth()) < 0) {
+        if (eftersparande.calculate(loanSettings.getFirstMonth()) < 0) {
             //TODO: Är den här nödvändig?
             double tempGenomsnittligtEftersparande = nyttEftersparkrav() > 0 ? 0 : genomsnittligtEftersparande();
-            calculationInterface = i -> (tempGenomsnittligtEftersparande / 2) +
+            eftersparande = i -> (tempGenomsnittligtEftersparande / 2) +
                     (lånekostnad.calculate(loanSettings.getFirstMonth()) - lånekostnad.calculate(i));
         }
 
-        return calculationInterface;
+        return eftersparande;
     }
 
     @Override
