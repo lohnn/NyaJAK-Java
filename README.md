@@ -1,1 +1,1 @@
-# NyaJAK-Java
+# JAK-bank 2.0
